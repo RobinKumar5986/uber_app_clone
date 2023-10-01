@@ -7,10 +7,11 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
+import com.example.myapplication.Maps.CustomerMapActivity;
+import com.example.myapplication.Maps.DriverMapActivity;
 import com.example.myapplication.databinding.ActivityMainBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -21,6 +22,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.Objects;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -67,8 +70,15 @@ public class MainActivity extends AppCompatActivity {
                                                             Toast.makeText(MainActivity.this, idDriver, Toast.LENGTH_SHORT).show();
                                                             //Intent Passing
                                                             progressDialog.dismiss();
-                                                            Intent intent=new Intent(MainActivity.this,MapActivity.class);
-                                                            startActivity(intent);
+                                                            if(Integer.parseInt(Objects.requireNonNull(idDriver))==1) {
+                                                                Intent intent = new Intent(MainActivity.this, DriverMapActivity.class);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            }else{
+                                                                Intent intent = new Intent(MainActivity.this, CustomerMapActivity.class);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            }
                                                         }
                                                     }
 
@@ -96,12 +106,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
 
-        //-----------Checking if the User is already Log-edin------//
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //-----------Checking if the User is already LoggedIn------//
         if (mAuth.getCurrentUser() != null) {
-            //Intent Passing
-            Intent intent=new Intent(MainActivity.this,MapActivity.class);
-            startActivity(intent);
+
             databaseReference=FirebaseDatabase.getInstance().getReference().child("Users");
             databaseReference.child(mAuth.getCurrentUser().getUid()).
                     addListenerForSingleValueEvent(new ValueEventListener() {
@@ -110,6 +122,16 @@ public class MainActivity extends AppCompatActivity {
                             if(snapshot.exists()){
                                 String idDriver=snapshot.child("isDriver").getValue(String.class);
                                 Toast.makeText(MainActivity.this, idDriver, Toast.LENGTH_SHORT).show();
+                                //Intent Passing
+                                if(Integer.parseInt(Objects.requireNonNull(idDriver))==1) {
+                                    Intent intent = new Intent(MainActivity.this, DriverMapActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }else{
+                                    Intent intent = new Intent(MainActivity.this, CustomerMapActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
 
                             }
                         }
@@ -120,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
-    }
 
-    //--------Function for checking weather the user is Driver of Customer-------/
+    }
 }
