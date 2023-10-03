@@ -51,5 +51,13 @@ dependencies {
     //--------Addon for google map services-----------//
     implementation("com.google.android.gms:play-services-location:11.0.2")
     implementation ("com.google.android.gms:play-services-location:18.0.0")
+    //--------Dependency for adding the real time location of the drivers in the Firebase--------//
+    // Full GeoFire library for Realtime Database users
+    implementation ("com.firebase:geofire-android:3.2.0")
+
+    // GeoFire utility functions for Cloud FireStore users who
+    // want to implement their own geo solution, see:
+    // https://firebase.google.com/docs/firestore/solutions/geoqueries
+    implementation ("com.firebase:geofire-android-common:3.2.0")
 
 }

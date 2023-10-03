@@ -6,12 +6,20 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.example.myapplication.MainActivity;
 import com.example.myapplication.R;
+import com.example.myapplication.SignUpActivity;
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -23,8 +31,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myapplication.databinding.ActivityDriverMapBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DriverMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
@@ -34,6 +46,8 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     GoogleApiClient mGoogleApiClients;
     Location mLastLocation;
     LocationRequest mLocationRequest;
+    Button button;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +58,10 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        assert mapFragment != null;
         mapFragment.getMapAsync(this);
+
+
     }
 
     @Override
@@ -55,8 +72,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         }
         buildGoogleApiClient();
         mMap.setMyLocationEnabled(true);
-
-
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
     }
     //this is a user defined function for Creating the API Client...
     protected synchronized  void buildGoogleApiClient(){
@@ -75,7 +91,26 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mLastLocation=location;
         LatLng latLng=new LatLng(location.getLatitude(),location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
+
+        //-----------Saving the Location to the Firebase Database----------//
+        /*Database Model
+            DriversAvailable:
+                |----DriverId:
+                    |----Latitude : "   "
+                    |----Longitude  : "   "
+        */
+        //--------Creating the firebase database reference--------//
+        String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        DatabaseReference reference=FirebaseDatabase.getInstance().getReference("DriversAvailable");
+
+        //-------Setting up the geofire reference--------//
+        GeoFire geoFire=new GeoFire(reference);
+        //under the userId the child the location is going to be stored
+        geoFire.setLocation(userId,new GeoLocation(location.getLatitude(),location.getLongitude()));
+
+
+
     }
 
     // This Method is Called every second for updating the location of the user
@@ -106,5 +141,18 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //--------Creating the firebase database reference--------//
+        String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        DatabaseReference reference=FirebaseDatabase.getInstance().getReference("DriversAvailable");
+
+        //-------Setting up the geofire reference for Logout function--------//
+        GeoFire geoFire=new GeoFire(reference);
+        //under the userId the child the location is going to be stored
+        geoFire.removeLocation(userId);
     }
 }

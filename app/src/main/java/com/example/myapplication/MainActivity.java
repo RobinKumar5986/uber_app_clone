@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+
+
         //------------------------Login In The Account------------------------------//
         binding.btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
     }
 
     @Override
@@ -113,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         //-----------Checking if the User is already LoggedIn------//
         if (mAuth.getCurrentUser() != null) {
-
             databaseReference=FirebaseDatabase.getInstance().getReference().child("Users");
             databaseReference.child(mAuth.getCurrentUser().getUid()).
                     addListenerForSingleValueEvent(new ValueEventListener() {
@@ -142,6 +144,5 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
-
     }
 }
