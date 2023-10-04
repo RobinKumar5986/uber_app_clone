@@ -9,6 +9,9 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.example.myapplication.R;
 import com.example.myapplication.databinding.ActivityDriverMapBinding;
@@ -37,6 +40,8 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     GoogleApiClient mGoogleApiClients;
     Location mLastLocation;
     LocationRequest mLocationRequest;
+    Button callButton;
+    private LatLng pickUpLocation;
 
 
 private ActivityCusetomerMapBinding binding;
@@ -54,6 +59,25 @@ private ActivityCusetomerMapBinding binding;
         Objects.requireNonNull(mapFragment).getMapAsync(this);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
+        callButton=findViewById(R.id.btnCall);
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Function for creating request for an uber
+                String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+                Toast.makeText(CustomerMapActivity.this, "Requesting is Clicked user "+userId, Toast.LENGTH_SHORT).show();
+                DatabaseReference reference=FirebaseDatabase.getInstance().getReference("Customer Requests");
+
+                //creating the geo fire for the new geo fire location we can also create our own system
+                GeoFire geoFire=new GeoFire(reference);
+                geoFire.setLocation(userId,new GeoLocation(mLastLocation.getLatitude(),mLastLocation.getLongitude()));
+                //creating marker for the pickUp location
+                pickUpLocation=new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(pickUpLocation).title("PickUp Here"));
+
+                callButton.setText("Finding the Driver....");
+            }
+        });
 
     }
 
@@ -66,7 +90,7 @@ private ActivityCusetomerMapBinding binding;
         }
         buildGoogleApiClient();
         mMap.setMyLocationEnabled(true);
-//        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
     }
     //this is a user defined function for Creating the API Client...
     protected synchronized  void buildGoogleApiClient(){
@@ -108,7 +132,7 @@ private ActivityCusetomerMapBinding binding;
         mLastLocation=location;
         LatLng latLng=new LatLng(location.getLatitude(),location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));//the smaller the number the camera will be closer in the Map or Ground value range from 1 to 21
 
         //-----------Saving the Location to the Firebase Database----------//
         /*Database Model
@@ -118,23 +142,24 @@ private ActivityCusetomerMapBinding binding;
                     |----Longitude  : "   "
         */
         //--------Creating the firebase database reference--------//
-        String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        DatabaseReference reference= FirebaseDatabase.getInstance().getReference("Customer Request");
+//        String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+//        DatabaseReference reference= FirebaseDatabase.getInstance().getReference("Customer Request");
+//
+//        //-------Setting up the geofire reference--------//
+//        GeoFire geoFire=new GeoFire(reference);
+//        //under the userId the child the location is going to be stored
+//        geoFire.setLocation(userId,new GeoLocation(location.getLatitude(),location.getLongitude()));
 
-        //-------Setting up the geofire reference--------//
-        GeoFire geoFire=new GeoFire(reference);
-        //under the userId the child the location is going to be stored
-        geoFire.setLocation(userId,new GeoLocation(location.getLatitude(),location.getLongitude()));
     }
     protected void onStop() {
         super.onStop();
         //--------Creating the firebase database reference--------//
-        String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        DatabaseReference reference=FirebaseDatabase.getInstance().getReference("Customer Request");
-
-        //-------Setting up the geofire reference for Logout function--------//
-        GeoFire geoFire=new GeoFire(reference);
-        //under the userId the child the location is going to be stored
-        geoFire.removeLocation(userId);
+//        String userId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+//        DatabaseReference reference=FirebaseDatabase.getInstance().getReference("Customer Request");
+//
+//        //-------Setting up the geofire reference for Logout function--------//
+//        GeoFire geoFire=new GeoFire(reference);
+//        //under the userId the child the location is going to be stored
+//        geoFire.removeLocation(userId);
     }
 }
