@@ -49,8 +49,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     //--------Addon for google map services-----------//
-    implementation("com.google.android.gms:play-services-location:11.0.2")
-    implementation ("com.google.android.gms:play-services-location:18.0.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-location:18.0.0")
     //--------Dependency for adding the real time location of the drivers in the Firebase--------//
     // Full GeoFire library for Realtime Database users
     implementation ("com.firebase:geofire-android:3.2.0")
